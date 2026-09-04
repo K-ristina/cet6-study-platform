@@ -1,0 +1,70 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --sb-green: #22c48e;
+    --sb-accent: #1db37c;
+    --sb-house: #1E3932;
+    --sb-cream: #f2f0eb;
+    --sb-ceramic: #edebe9;
+  }
+
+  body {
+    @apply antialiased font-sans text-sb-text bg-sb-cream dark:bg-slate-950 dark:text-slate-100;
+    letter-spacing: -0.015em;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3, h4 {
+    letter-spacing: -0.015em;
+  }
+}
+
+/* iOS Standard Buttons & Component Curvature */
+.sb-btn-primary {
+  @apply bg-sb-mint hover:bg-sb-mint/80 text-sb-green border border-sb-mint/80 font-bold rounded-full px-5 py-2.5 text-sm transition-all duration-200 active:scale-[0.96] inline-flex items-center justify-center space-x-1.5 shadow-sm;
+}
+
+.sb-btn-secondary {
+  @apply bg-white/70 hover:bg-sb-mint/30 dark:hover:bg-white/10 text-sb-green dark:text-sb-mint border border-sb-mint font-semibold rounded-full px-5 py-2.5 text-sm transition-all duration-200 active:scale-[0.96] inline-flex items-center justify-center space-x-1.5;
+}
+
+.sb-btn-white {
+  @apply bg-white hover:bg-white/90 text-sb-green font-bold rounded-full px-5 py-2.5 text-sm transition-all duration-200 active:scale-[0.96] inline-flex items-center justify-center space-x-1.5 shadow-sm;
+}
+
+.sb-btn-dark-outline {
+  @apply bg-transparent hover:bg-white/10 text-sb-green border border-sb-mint font-semibold rounded-full px-5 py-2.5 text-sm transition-all duration-200 active:scale-[0.96] inline-flex items-center justify-center space-x-1.5;
+}
+
+/* iOS Inset Grouped Card (18px radius) */
+.sb-card {
+  @apply bg-white dark:bg-slate-900 rounded-ios-card shadow-sb-card border border-black/[0.04] dark:border-white/[0.06] transition-all;
+}
+
+/* iOS Modal / Sheet (28px radius) */
+.ios-modal {
+  @apply bg-white dark:bg-slate-900 rounded-ios-sheet shadow-ios-sheet border border-black/[0.06] dark:border-white/[0.08] overflow-hidden;
+}
+
+.sb-feature-band {
+  @apply bg-gradient-to-r from-sb-mint via-[#ddf0e8] to-[#eaf6f0] text-sb-house rounded-ios-lg;
+}
+
+/* iOS Smooth Scrollbars */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(30, 57, 50, 0.25);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 98, 65, 0.5);
+}

@@ -1,0 +1,33 @@
+# Dependencies
+node_modules
+.pnp
+.pnp.js
+
+# Production build
+dist
+dist-ssr
+*.local
+
+# Large media assets (Uploaded to Cloudflare R2, do not push 2.85GB to GitHub!)
+public/pdfs
+public/answers
+public/audio
+
+# Environment & Secrets (Never commit credentials!)
+.env
+.env.local
+.env.*.local
+.env.r2
+
+# Editor & Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
