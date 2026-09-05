@@ -70,15 +70,15 @@ export const Heatmap: React.FC<HeatmapProps> = ({ daysCount = 49 }) => {
   };
 
   return (
-    <div className="sb-card p-6 space-y-4">
+    <div className="sb-card !rounded-none p-4 sm:p-5 space-y-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <Flame className="w-4 h-4 fill-sb-gold text-sb-gold" />
-          <h3 className="font-bold text-sm text-sb-green dark:text-sb-mint font-sans">
+          <h3 className="font-bold text-xs sm:text-sm text-sb-green dark:text-sb-mint font-sans">
             备考活跃度 打卡热力图
           </h3>
         </div>
-        <span className="text-xs font-semibold text-sb-text-soft dark:text-sb-text-dark-soft">
+        <span className="text-[11px] font-semibold text-sb-text-soft dark:text-sb-text-dark-soft">
           近 {daysCount} 天坚持率 {ratePercent}%
         </span>
       </div>

@@ -136,17 +136,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
 
           {/* Center: Vertical Navigation Buttons Stack */}
-          <nav className="space-y-1.5 pt-2">
+          <nav className="space-y-1 pt-2 -mx-5">
             {navItems.map((item) => {
               const isActive = currentTab === item.id;
               return (
                 <button
                   key={item.id}
                   onClick={() => handleNavClick(item.id)}
-                  className={`w-full flex items-center justify-between px-4 py-3 rounded-full text-sm font-bold transition-all duration-200 active:scale-[0.96] ${
+                  className={`w-full flex items-center justify-between px-5 py-3 rounded-none text-sm font-bold transition-all duration-150 ${
                     isActive
-                      ? "bg-sb-mint text-sb-green shadow-sm font-extrabold border border-sb-mint/80"
-                      : "text-sb-text dark:text-white/80 hover:bg-sb-mint/30 dark:hover:bg-white/10 hover:text-sb-green"
+                      ? "bg-sb-mint text-sb-green shadow-sm font-extrabold border-y border-sb-mint/90 border-l-4 border-l-sb-green"
+                      : "text-sb-text dark:text-white/80 hover:bg-sb-mint/30 dark:hover:bg-white/10 hover:text-sb-green border-y border-transparent border-l-4 border-l-transparent"
                   }`}
                 >
                   <div className="flex items-center space-x-3">
@@ -164,7 +164,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
                   {item.badge && (
                     <span
-                      className={`text-[10px] px-2 py-0.5 rounded-full font-bold transition-colors ${
+                      className={`text-[10px] px-2 py-0.5 rounded font-bold transition-colors ${
                         isActive
                           ? "bg-white/80 text-sb-green border border-sb-mint/60"
                           : "bg-sb-mint/60 text-sb-green dark:bg-white/10 dark:text-sb-mint"
@@ -180,9 +180,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
 
         {/* Bottom: Streak, Countdown & Settings Actions */}
-        <div className="space-y-3 pt-6 border-t border-black/[0.05] dark:border-white/[0.08]">
-          {/* Gold Flame Streak Card (iOS Inset Card) */}
-          <div className="bg-sb-gold-lightest dark:bg-white/10 border border-sb-gold/40 rounded-ios-card p-3 flex items-center justify-between">
+        <div className="space-y-2 pt-5 border-t border-black/[0.05] dark:border-white/[0.08]">
+          {/* Gold Flame Streak */}
+          <div className="flex items-center justify-between px-1 py-1.5 text-xs">
             <div className="flex items-center space-x-2">
               <Flame className="w-4 h-4 fill-sb-gold text-sb-gold" />
               <span className="text-xs font-bold text-sb-green dark:text-sb-gold font-sans">
@@ -194,8 +194,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </span>
           </div>
 
-          {/* Exam Countdown Card */}
-          <div className="bg-sb-ceramic dark:bg-white/5 border border-black/[0.04] rounded-ios-card p-3 flex items-center justify-between text-xs text-sb-text dark:text-white">
+          {/* Exam Countdown */}
+          <div className="flex items-center justify-between px-1 py-1.5 text-xs text-sb-text dark:text-white">
             <div className="flex items-center space-x-2">
               <Clock className="w-4 h-4 text-sb-accent" />
               <span className="font-medium text-sb-text-soft dark:text-sb-text-dark-soft">
@@ -224,7 +224,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
               <button
                 onClick={onResetData}
-                title="重置演示数据"
+                title="重置数据"
                 className="p-2 rounded-full text-sb-text-soft hover:text-sb-green hover:bg-black/5 dark:hover:bg-white/10 transition-all duration-200 active:scale-[0.92]"
               >
                 <RotateCcw className="w-4 h-4" />
