@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/dict/:match*",
+      "destination": "/api/dict"
+    },
+    {
+      "source": "/((?!api/).*)",
+      "destination": "/index.html"
+    }
+  ]
+}

@@ -24,7 +24,12 @@ export default defineConfig(({ mode }) => {
         '/api/dict': {
           target: 'https://dict.youdao.com',
           changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api\/dict/, ''),
+          rewrite: (path) => {
+            if (path.startsWith('/api/dict/jsonapi')) {
+              return path.replace(/^\/api\/dict/, '');
+            }
+            return path.replace(/^\/api\/dict/, '/jsonapi');
+          },
           headers: {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
             'Referer': 'https://www.youdao.com/',

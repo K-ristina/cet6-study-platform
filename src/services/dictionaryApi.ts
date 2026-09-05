@@ -159,9 +159,12 @@ export async function lookupEnglishWord(rawWord: string): Promise<DictionaryEntr
 
   const encoded = encodeURIComponent(word);
 
-  // 2. Tier 2: Collins Cobuild Dictionary via local proxy
+  // 2. Tier 2: Collins Cobuild Dictionary (via Vercel Serverless Function or Vite proxy)
   try {
-    const res = await fetchWithTimeout(`/api/dict/jsonapi?q=${encoded}`, 3000);
+    let res = await fetchWithTimeout(`/api/dict?q=${encoded}`, 3500);
+    if (!res.ok) {
+      res = await fetchWithTimeout(`/api/dict/jsonapi?q=${encoded}`, 3000);
+    }
     if (res.ok) {
       const data = await res.json();
       const collinsEntry = parseCollinsFromYoudao(data, word);
@@ -171,7 +174,7 @@ export async function lookupEnglishWord(rawWord: string): Promise<DictionaryEntr
       }
     }
   } catch (err) {
-    console.warn(`Collins lookup via local proxy skipped for "${word}":`, err);
+    console.warn(`Collins lookup via serverless/proxy skipped for "${word}":`, err);
   }
 
   // 3. Tier 3: Check offline built-in CET-6 dictionary

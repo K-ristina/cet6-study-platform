@@ -288,7 +288,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       {paper.title}
                     </p>
                     <span className="text-[11px] text-sb-text-soft dark:text-sb-text-dark-soft">
-                      {paper.sections.length} 个部分 · 130 分钟标准考场
+                      {paper.sections.length} 个部分
                     </span>
                   </div>
                   <ChevronRight className="w-4 h-4 text-sb-text-soft group-hover:text-sb-green group-hover:translate-x-0.5 transition-transform flex-shrink-0" />
