@@ -397,7 +397,7 @@ export const DictionaryView: React.FC = () => {
                       <Volume2
                         className={`w-4 h-4 ${isPlayingAudio ? "animate-bounce" : ""}`}
                       />
-                      <span>{validAudio ? "真人发音" : "智能发音"}</span>
+                      {/* <span>{validAudio ? "真人发音" : "智能发音"}</span> */}
                     </button>
                   </div>
                 </div>
@@ -460,7 +460,7 @@ export const DictionaryView: React.FC = () => {
                           {def.example && (
                             <div className="ml-8 pl-3.5 border-l-2 border-sb-mint/90 py-2 bg-sb-cream/40 dark:bg-slate-800/50 rounded-r-xl pr-3 space-y-1">
                               <div className="text-[10px] font-bold text-sb-green uppercase tracking-wider">
-                                柯林斯真题例句 (Example)
+                                Example
                               </div>
                               <p className="text-xs text-slate-700 dark:text-slate-300 italic leading-relaxed font-serif">
                                 "{def.example}"

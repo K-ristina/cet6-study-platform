@@ -64,6 +64,11 @@ const App: React.FC = () => {
         await db.examRecords.clear();
         await db.annotations.clear();
         await db.wordBook.clear();
+        Object.keys(localStorage).forEach((key) => {
+          if (key.startsWith('cet6_answers_')) {
+            localStorage.removeItem(key);
+          }
+        });
         window.location.reload();
       } catch (err) {
         console.error(err);
@@ -91,14 +96,15 @@ const App: React.FC = () => {
           />
         )}
 
-        {currentTab === 'exam' && (
+        {/* ExamWorkspace is kept mounted with display toggle so switching tabs never interrupts audio, answers, or scroll state */}
+        <div className={`h-full w-full flex-col ${currentTab === 'exam' ? 'flex' : 'hidden'}`}>
           <ExamWorkspace
             initialPaperId={examParams.paperId}
             initialSectionId={examParams.sectionId}
             initialAudioTime={examParams.audioTime}
             onJumpToTab={(tab) => setCurrentTab(tab)}
           />
-        )}
+        </div>
 
         {currentTab === 'planner' && (
           <PlannerView />

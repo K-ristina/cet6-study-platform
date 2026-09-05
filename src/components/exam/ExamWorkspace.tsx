@@ -40,15 +40,94 @@ type FlatQuestion = {
   label: string;
 };
 
-export const ExamWorkspace: React.FC<ExamWorkspaceProps> = ({ initialPaperId = 'cet6_2026_06_set1' }) => {
+export const ExamWorkspace: React.FC<ExamWorkspaceProps> = ({ 
+  initialPaperId = 'cet6_2026_06_set1',
+  initialSectionId,
+  initialAudioTime,
+  onJumpToTab
+}) => {
   const [selectedPaperId, setSelectedPaperId] = useState<string>(initialPaperId);
   const currentPaper: ExamPaper = DEFAULT_PAPERS.find((p) => p.id === selectedPaperId) || DEFAULT_PAPERS[0];
-  const [userAnswers, setUserAnswers] = useState<Record<string, string>>({});
+  
+  // Initialize with stored draft if available
+  const [userAnswers, setUserAnswers] = useState<Record<string, string>>(() => {
+    try {
+      const saved = localStorage.getItem(`cet6_answers_${initialPaperId}`);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return parsed.answers || {};
+      }
+    } catch {
+      // ignore
+    }
+    return {};
+  });
+
   const [autoAdvance, setAutoAdvance] = useState<boolean>(true);
-  const [isReviewMode, setIsReviewMode] = useState<boolean>(false);
+  
+  const [isReviewMode, setIsReviewMode] = useState<boolean>(() => {
+    try {
+      const saved = localStorage.getItem(`cet6_answers_${initialPaperId}`);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return Boolean(parsed.isReviewMode);
+      }
+    } catch {
+      // ignore
+    }
+    return false;
+  });
+
   const [showOverview, setShowOverview] = useState<boolean>(false);
-  const [pdfViewMode, setPdfViewMode] = useState<'question' | 'answer'>('question');
+  
+  const [pdfViewMode, setPdfViewMode] = useState<'question' | 'answer'>(() => {
+    try {
+      const saved = localStorage.getItem(`cet6_answers_${initialPaperId}`);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return parsed.pdfViewMode || 'question';
+      }
+    } catch {
+      // ignore
+    }
+    return 'question';
+  });
+
   const [startTime] = useState<number>(Date.now());
+
+  // Sync selectedPaperId if initialPaperId prop changes
+  useEffect(() => {
+    if (initialPaperId && initialPaperId !== selectedPaperId) {
+      setSelectedPaperId(initialPaperId);
+    }
+  }, [initialPaperId]);
+
+  // Load draft when switching papers
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(`cet6_answers_${selectedPaperId}`);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        setUserAnswers(parsed.answers || {});
+        if (typeof parsed.currentQIndex === 'number') {
+          setCurrentQIndex(parsed.currentQIndex);
+        }
+        if (typeof parsed.isReviewMode === 'boolean') {
+          setIsReviewMode(parsed.isReviewMode);
+        }
+        if (parsed.pdfViewMode) {
+          setPdfViewMode(parsed.pdfViewMode);
+        }
+      } else {
+        setUserAnswers({});
+        setCurrentQIndex(0);
+        setIsReviewMode(false);
+        setPdfViewMode('question');
+      }
+    } catch (e) {
+      console.error('Failed to load saved answers draft', e);
+    }
+  }, [selectedPaperId]);
   
   const flatQuestions = useMemo(() => {
     const flats: FlatQuestion[] = [];
@@ -90,6 +169,33 @@ export const ExamWorkspace: React.FC<ExamWorkspaceProps> = ({ initialPaperId = '
       if (activeItem.section.type !== 'writing' && activeItem.section.type !== 'translation') {
         setTimeout(() => setCurrentQIndex(prev => prev + 1), 300);
       }
+    }
+  };
+
+  // Auto-save draft on answers, index, or review mode change
+  useEffect(() => {
+    if (Object.keys(userAnswers).length > 0 || isReviewMode) {
+      localStorage.setItem(
+        `cet6_answers_${selectedPaperId}`,
+        JSON.stringify({
+          answers: userAnswers,
+          currentQIndex,
+          isReviewMode,
+          pdfViewMode,
+          updatedAt: Date.now(),
+        })
+      );
+    }
+  }, [userAnswers, currentQIndex, isReviewMode, pdfViewMode, selectedPaperId]);
+
+  const handleResetCurrentAnswers = () => {
+    if (window.confirm('确定要清空本套真题的当前作答记录并重新作答吗？')) {
+      setUserAnswers({});
+      setCurrentQIndex(0);
+      setIsReviewMode(false);
+      setPdfViewMode('question');
+      setShowOverview(false);
+      localStorage.removeItem(`cet6_answers_${selectedPaperId}`);
     }
   };
 
@@ -206,11 +312,7 @@ export const ExamWorkspace: React.FC<ExamWorkspaceProps> = ({ initialPaperId = '
             value={selectedPaperId}
             onChange={(e) => {
               setSelectedPaperId(e.target.value);
-              setCurrentQIndex(0);
-              setUserAnswers({});
-              setIsReviewMode(false);
               setShowOverview(false);
-              setPdfViewMode('question');
             }}
             className="w-full text-xs font-bold bg-white/90 dark:bg-slate-800 border border-sb-mint/80 dark:border-white/20 rounded-lg px-2.5 py-1.5 text-sb-house dark:text-white focus:outline-none focus:ring-2 focus:ring-sb-green truncate"
           >
@@ -243,6 +345,17 @@ export const ExamWorkspace: React.FC<ExamWorkspaceProps> = ({ initialPaperId = '
             </h3>
 
             <div className="flex items-center space-x-1.5">
+              {(answeredCount > 0 || isReviewMode) && (
+                <button
+                  onClick={handleResetCurrentAnswers}
+                  className="text-[11px] px-2 py-0.5 rounded-full font-bold transition-all flex items-center space-x-1 bg-sb-ceramic dark:bg-white/10 text-sb-text-soft hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30"
+                  title="清空本套试卷的作答记录"
+                >
+                  <RotateCcw className="w-3 h-3" />
+                  <span>重置</span>
+                </button>
+              )}
+
               <button
                 onClick={() => setShowOverview(!showOverview)}
                 className={`text-[11px] px-2 py-0.5 rounded-full font-bold transition-all flex items-center space-x-1 ${
