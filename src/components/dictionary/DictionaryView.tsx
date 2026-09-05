@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from "react";
 import {
   BookMarked,
   Search,
@@ -16,28 +16,19 @@ import {
   X,
   Flame,
   Layers,
-  GraduationCap
-} from 'lucide-react';
-import { DictionaryEntry, WordBookItem } from '../../types';
-import { lookupEnglishWord, playWordPronunciation, normalizeWord } from '../../services/dictionaryApi';
-import { db } from '../../db';
-
-const POPULAR_CET6_WORDS = [
-  'comprehensive',
-  'sustainable',
-  'inevitable',
-  'perspective',
-  'ambiguous',
-  'vulnerable',
-  'deteriorate',
-  'indispensable',
-  'prevalent',
-  'substitute',
-];
+  GraduationCap,
+} from "lucide-react";
+import { DictionaryEntry, WordBookItem } from "../../types";
+import {
+  lookupEnglishWord,
+  playWordPronunciation,
+  normalizeWord,
+} from "../../services/dictionaryApi";
+import { db } from "../../db";
 
 export const DictionaryView: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'search' | 'wordbook'>('search');
-  const [query, setQuery] = useState<string>('comprehensive');
+  const [activeTab, setActiveTab] = useState<"search" | "wordbook">("search");
+  const [query, setQuery] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [isPlayingAudio, setIsPlayingAudio] = useState<boolean>(false);
   const [entry, setEntry] = useState<DictionaryEntry | null>(null);
@@ -46,15 +37,16 @@ export const DictionaryView: React.FC = () => {
 
   // Wordbook tab states
   const [wordBookList, setWordBookList] = useState<WordBookItem[]>([]);
-  const [wordBookFilter, setWordBookFilter] = useState<'all' | 'unmastered' | 'mastered'>('all');
-  const [wordBookSearch, setWordBookSearch] = useState<string>('');
+  const [wordBookFilter, setWordBookFilter] = useState<
+    "all" | "unmastered" | "mastered"
+  >("all");
+  const [wordBookSearch, setWordBookSearch] = useState<string>("");
 
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Initial load
   useEffect(() => {
     loadWordBook();
-    handleLookup('comprehensive');
   }, []);
 
   // Check if current word is in wordbook
@@ -62,7 +54,10 @@ export const DictionaryView: React.FC = () => {
     async function checkSaved() {
       if (entry?.word) {
         try {
-          const item = await db.wordBook.where('word').equals(entry.word.toLowerCase()).first();
+          const item = await db.wordBook
+            .where("word")
+            .equals(entry.word.toLowerCase())
+            .first();
           setIsSavedInWordBook(!!item);
         } catch {
           setIsSavedInWordBook(false);
@@ -76,10 +71,10 @@ export const DictionaryView: React.FC = () => {
 
   const loadWordBook = async () => {
     try {
-      const items = await db.wordBook.orderBy('addedAt').reverse().toArray();
+      const items = await db.wordBook.orderBy("addedAt").reverse().toArray();
       setWordBookList(items);
     } catch (e) {
-      console.error('Failed to load wordbook:', e);
+      console.error("Failed to load wordbook:", e);
     }
   };
 
@@ -128,19 +123,21 @@ export const DictionaryView: React.FC = () => {
     const wordKey = entry.word.toLowerCase();
 
     try {
-      const existing = await db.wordBook.where('word').equals(wordKey).first();
+      const existing = await db.wordBook.where("word").equals(wordKey).first();
       if (existing) {
         await db.wordBook.delete(existing.id);
         setIsSavedInWordBook(false);
       } else {
         const firstDef =
-          entry.meanings[0]?.definitions[0]?.definition || 'No definition available';
+          entry.meanings[0]?.definitions[0]?.definition ||
+          "No definition available";
         const bestAudio = entry.phonetics.find((p) => !!p.audio)?.audio;
 
         const newItem: WordBookItem = {
           id: `wb_${wordKey}_${Date.now()}`,
           word: entry.word,
-          phonetic: entry.phonetic || entry.phonetics.find((p) => !!p.text)?.text || '',
+          phonetic:
+            entry.phonetic || entry.phonetics.find((p) => !!p.text)?.text || "",
           simpleDef: firstDef,
           fullEntry: entry,
           mastered: false,
@@ -151,7 +148,7 @@ export const DictionaryView: React.FC = () => {
       }
       await loadWordBook();
     } catch (err) {
-      console.error('Failed to toggle wordbook:', err);
+      console.error("Failed to toggle wordbook:", err);
     }
   };
 
@@ -159,7 +156,9 @@ export const DictionaryView: React.FC = () => {
     try {
       await db.wordBook.update(item.id, { mastered: !item.mastered });
       setWordBookList((prev) =>
-        prev.map((w) => (w.id === item.id ? { ...w, mastered: !w.mastered } : w))
+        prev.map((w) =>
+          w.id === item.id ? { ...w, mastered: !w.mastered } : w,
+        ),
       );
     } catch (e) {
       console.error(e);
@@ -171,7 +170,11 @@ export const DictionaryView: React.FC = () => {
     try {
       await db.wordBook.delete(id);
       setWordBookList((prev) => prev.filter((w) => w.id !== id));
-      if (entry && wordBookList.find((w) => w.id === id)?.word.toLowerCase() === entry.word.toLowerCase()) {
+      if (
+        entry &&
+        wordBookList.find((w) => w.id === id)?.word.toLowerCase() ===
+          entry.word.toLowerCase()
+      ) {
         setIsSavedInWordBook(false);
       }
     } catch (e) {
@@ -184,26 +187,27 @@ export const DictionaryView: React.FC = () => {
     if (item.fullEntry) {
       setEntry(item.fullEntry);
       setNotFound(false);
-      setActiveTab('search');
+      setActiveTab("search");
     } else {
-      setActiveTab('search');
+      setActiveTab("search");
       handleLookup(item.word);
     }
   };
 
   // Best audio and phonetic
   const validAudio = entry?.phonetics.find((p) => !!p.audio)?.audio;
-  const bestPhonetic = entry?.phonetic || entry?.phonetics.find((p) => !!p.text)?.text;
+  const bestPhonetic =
+    entry?.phonetic || entry?.phonetics.find((p) => !!p.text)?.text;
 
   // Filtered wordbook
   const filteredWordBook = wordBookList.filter((item) => {
     const matchSearch =
-      wordBookSearch === '' ||
+      wordBookSearch === "" ||
       item.word.toLowerCase().includes(wordBookSearch.toLowerCase()) ||
       item.simpleDef.toLowerCase().includes(wordBookSearch.toLowerCase());
     if (!matchSearch) return false;
-    if (wordBookFilter === 'mastered') return item.mastered;
-    if (wordBookFilter === 'unmastered') return !item.mastered;
+    if (wordBookFilter === "mastered") return item.mastered;
+    if (wordBookFilter === "unmastered") return !item.mastered;
     return true;
   });
 
@@ -212,7 +216,6 @@ export const DictionaryView: React.FC = () => {
 
   return (
     <div className="w-full px-6 sm:px-8 lg:px-10 py-8 space-y-8 animate-in fade-in duration-300 font-sans">
-      
       {/* 1. Header: Starbucks Brand Style Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center space-x-3">
@@ -223,20 +226,17 @@ export const DictionaryView: React.FC = () => {
             <h2 className="text-xl font-extrabold text-sb-green dark:text-sb-mint font-sans">
               英英词典 & 六级生词本
             </h2>
-            <p className="text-xs text-sb-text-soft dark:text-slate-400">
-              纯正英英释义 · 六级高频同义改写 · 本地生词本强化记忆
-            </p>
           </div>
         </div>
 
         {/* Tab Switcher */}
         <div className="flex items-center space-x-1 bg-sb-ceramic dark:bg-white/10 p-1 rounded-full text-xs font-bold self-start sm:self-auto shadow-sm">
           <button
-            onClick={() => setActiveTab('search')}
+            onClick={() => setActiveTab("search")}
             className={`px-4 py-1.5 rounded-full transition-all duration-200 flex items-center space-x-1.5 ${
-              activeTab === 'search'
-                ? 'bg-sb-mint text-sb-green font-extrabold shadow-sm border border-sb-mint'
-                : 'text-sb-text-soft dark:text-white/80 hover:text-sb-green'
+              activeTab === "search"
+                ? "bg-sb-mint text-sb-green font-extrabold shadow-sm border border-sb-mint"
+                : "text-sb-text-soft dark:text-white/80 hover:text-sb-green"
             }`}
           >
             <BookOpen className="w-3.5 h-3.5" />
@@ -245,13 +245,13 @@ export const DictionaryView: React.FC = () => {
 
           <button
             onClick={() => {
-              setActiveTab('wordbook');
+              setActiveTab("wordbook");
               loadWordBook();
             }}
             className={`px-4 py-1.5 rounded-full transition-all duration-200 flex items-center space-x-1.5 ${
-              activeTab === 'wordbook'
-                ? 'bg-sb-mint text-sb-green font-extrabold shadow-sm border border-sb-mint'
-                : 'text-sb-text-soft dark:text-white/80 hover:text-sb-green'
+              activeTab === "wordbook"
+                ? "bg-sb-mint text-sb-green font-extrabold shadow-sm border border-sb-mint"
+                : "text-sb-text-soft dark:text-white/80 hover:text-sb-green"
             }`}
           >
             <FolderHeart className="w-3.5 h-3.5" />
@@ -266,11 +266,14 @@ export const DictionaryView: React.FC = () => {
       </div>
 
       {/* 2. TAB 1: Search View */}
-      {activeTab === 'search' && (
+      {activeTab === "search" && (
         <div className="space-y-6">
           {/* Search Box Card */}
-          <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-black/[0.06] dark:border-white/[0.08] shadow-sb-card space-y-4">
-            <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-black/[0.06] dark:border-white/[0.08] shadow-sb-card">
+            <form
+              onSubmit={handleSubmit}
+              className="flex flex-col sm:flex-row gap-3"
+            >
               <div className="relative flex-1 flex items-center">
                 <Search className="w-5 h-5 text-sb-green absolute left-4 pointer-events-none" />
                 <input
@@ -278,14 +281,14 @@ export const DictionaryView: React.FC = () => {
                   type="text"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  placeholder="输入六级生词查英英释义、同义替换与真人发音 (例如: inevitable, sustainable)..."
+                  placeholder="请输入要查询的单词"
                   className="w-full pl-12 pr-10 py-3 bg-sb-cream/40 dark:bg-slate-800/80 border border-sb-mint dark:border-slate-700 rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-sb-green dark:text-white placeholder:text-slate-400 transition-all"
                 />
                 {query && (
                   <button
                     type="button"
                     onClick={() => {
-                      setQuery('');
+                      setQuery("");
                       searchInputRef.current?.focus();
                     }}
                     className="absolute right-3.5 p-1 rounded-full hover:bg-black/5 text-slate-400 hover:text-slate-600 transition"
@@ -313,37 +316,15 @@ export const DictionaryView: React.FC = () => {
                 )}
               </button>
             </form>
-
-            {/* Recommended High-Frequency Words Chips */}
-            <div className="flex items-center flex-wrap gap-2 pt-1 text-xs">
-              <span className="text-slate-400 font-bold flex items-center mr-1">
-                <Sparkles className="w-3.5 h-3.5 text-sb-gold mr-1" />
-                六级常考高频词:
-              </span>
-              {POPULAR_CET6_WORDS.map((w) => (
-                <button
-                  key={w}
-                  onClick={() => {
-                    setQuery(w);
-                    handleLookup(w);
-                  }}
-                  className={`px-3 py-1 rounded-lg border font-mono transition-all text-xs ${
-                    entry?.word.toLowerCase() === w
-                      ? 'bg-sb-mint text-sb-green font-bold border-sb-mint'
-                      : 'bg-sb-cream/60 dark:bg-slate-800 text-sb-text dark:text-slate-300 border-black/5 dark:border-white/5 hover:border-sb-mint hover:text-sb-green'
-                  }`}
-                >
-                  {w}
-                </button>
-              ))}
-            </div>
           </div>
 
           {/* Results Area */}
           {loading && (
             <div className="py-20 flex flex-col items-center justify-center text-slate-400 space-y-3 bg-white dark:bg-slate-900 rounded-2xl border border-black/[0.06] dark:border-white/[0.08]">
               <Loader2 className="w-8 h-8 text-sb-green animate-spin" />
-              <p className="text-sm font-medium">正在检索英英词典库与同义词库...</p>
+              <p className="text-sm font-medium">
+                正在检索英英词典库与同义词库...
+              </p>
             </div>
           )}
 
@@ -352,9 +333,27 @@ export const DictionaryView: React.FC = () => {
               <div className="w-12 h-12 rounded-full bg-sb-mint/40 text-sb-green flex items-center justify-center mx-auto">
                 <BookOpen className="w-6 h-6" />
               </div>
-              <h3 className="text-base font-bold text-sb-house dark:text-white">未找到对应单词</h3>
+              <h3 className="text-base font-bold text-sb-house dark:text-white">
+                未找到对应单词
+              </h3>
               <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed">
-                请检查单词拼写（建议尝试动词原形或名词单数，如 <code className="text-sb-green font-mono">comprehensive</code>）。
+                请检查单词拼写（建议尝试动词原形或名词单数，如{" "}
+                <code className="text-sb-green font-mono">comprehensive</code>
+                ）。
+              </p>
+            </div>
+          )}
+
+          {!entry && !loading && !notFound && (
+            <div className="py-20 text-center space-y-3 bg-white dark:bg-slate-900 rounded-2xl border border-dashed border-black/10 dark:border-white/10 p-8 text-slate-400">
+              <div className="w-12 h-12 rounded-full bg-sb-mint/30 text-sb-green flex items-center justify-center mx-auto">
+                <Search className="w-6 h-6 text-sb-green" />
+              </div>
+              <h3 className="text-base font-bold text-sb-house dark:text-white">
+                输入单词开始查词
+              </h3>
+              <p className="text-xs text-slate-400 max-w-sm mx-auto leading-relaxed">
+                在上方搜索框输入任意英语单词，可即时获取纯正英英释义、六级常考同义替换与母语真人发音。
               </p>
             </div>
           )}
@@ -373,6 +372,19 @@ export const DictionaryView: React.FC = () => {
                         {bestPhonetic}
                       </span>
                     )}
+                    {entry.sourceName && (
+                      <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-sb-mint text-sb-green border border-sb-mint/80">
+                        {entry.sourceName}
+                      </span>
+                    )}
+                    {typeof entry.stars === "number" && entry.stars > 0 && (
+                      <span
+                        className="text-xs text-amber-500 font-bold tracking-widest"
+                        title={`柯林斯高频词汇等级: ${entry.stars} 星`}
+                      >
+                        {"★".repeat(Math.min(entry.stars, 5))}
+                      </span>
+                    )}
                   </div>
 
                   <div className="mt-3 flex items-center space-x-2">
@@ -382,8 +394,10 @@ export const DictionaryView: React.FC = () => {
                       className="px-3.5 py-1.5 rounded-full bg-sb-mint text-sb-green hover:bg-sb-green hover:text-white transition-all text-xs font-bold flex items-center space-x-2 shadow-sm active:scale-95"
                       title="点击发音"
                     >
-                      <Volume2 className={`w-4 h-4 ${isPlayingAudio ? 'animate-bounce' : ''}`} />
-                      <span>{validAudio ? '真人发音' : '智能发音'}</span>
+                      <Volume2
+                        className={`w-4 h-4 ${isPlayingAudio ? "animate-bounce" : ""}`}
+                      />
+                      <span>{validAudio ? "真人发音" : "智能发音"}</span>
                     </button>
                   </div>
                 </div>
@@ -392,8 +406,8 @@ export const DictionaryView: React.FC = () => {
                   onClick={handleToggleWordBook}
                   className={`px-5 py-2.5 rounded-xl text-xs font-extrabold flex items-center space-x-2 transition-all shadow-sm active:scale-95 self-start sm:self-auto ${
                     isSavedInWordBook
-                      ? 'bg-sb-green text-white border border-sb-green shadow-sb-green/20'
-                      : 'bg-white dark:bg-slate-800 text-sb-green border border-sb-mint hover:bg-sb-mint/40'
+                      ? "bg-sb-green text-white border border-sb-green shadow-sb-green/20"
+                      : "bg-white dark:bg-slate-800 text-sb-green border border-sb-mint hover:bg-sb-mint/40"
                   }`}
                 >
                   {isSavedInWordBook ? (
@@ -422,6 +436,11 @@ export const DictionaryView: React.FC = () => {
                       <span className="text-xs font-black uppercase tracking-wider px-3 py-1 rounded-full bg-sb-mint text-sb-green border border-sb-mint/80 font-sans">
                         {meaning.partOfSpeech}
                       </span>
+                      {meaning.partOfSpeechTips && (
+                        <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                          {meaning.partOfSpeechTips}
+                        </span>
+                      )}
                     </div>
 
                     {/* Definitions */}
@@ -439,10 +458,18 @@ export const DictionaryView: React.FC = () => {
 
                           {/* Example */}
                           {def.example && (
-                            <div className="ml-8 pl-3.5 border-l-2 border-sb-mint/90 py-1 bg-sb-cream/30 dark:bg-slate-800/40 rounded-r-lg pr-3">
-                              <p className="text-xs text-slate-600 dark:text-slate-400 italic leading-relaxed">
+                            <div className="ml-8 pl-3.5 border-l-2 border-sb-mint/90 py-2 bg-sb-cream/40 dark:bg-slate-800/50 rounded-r-xl pr-3 space-y-1">
+                              <div className="text-[10px] font-bold text-sb-green uppercase tracking-wider">
+                                柯林斯真题例句 (Example)
+                              </div>
+                              <p className="text-xs text-slate-700 dark:text-slate-300 italic leading-relaxed font-serif">
                                 "{def.example}"
                               </p>
+                              {def.exampleTranslation && (
+                                <p className="text-xs text-slate-500 dark:text-slate-400 not-italic">
+                                  {def.exampleTranslation}
+                                </p>
+                              )}
                             </div>
                           )}
                         </li>
@@ -451,7 +478,9 @@ export const DictionaryView: React.FC = () => {
 
                     {/* Six-level Synonyms Section (Crucial for CET-6) */}
                     {((meaning.synonyms && meaning.synonyms.length > 0) ||
-                      meaning.definitions.some((d) => d.synonyms && d.synonyms.length > 0)) && (
+                      meaning.definitions.some(
+                        (d) => d.synonyms && d.synonyms.length > 0,
+                      )) && (
                       <div className="pt-3 border-t border-black/[0.05] dark:border-white/[0.05]">
                         <div className="flex items-center space-x-2 mb-2">
                           <Sparkles className="w-4 h-4 text-sb-gold" />
@@ -464,8 +493,10 @@ export const DictionaryView: React.FC = () => {
                           {Array.from(
                             new Set([
                               ...(meaning.synonyms || []),
-                              ...meaning.definitions.flatMap((d) => d.synonyms || []),
-                            ])
+                              ...meaning.definitions.flatMap(
+                                (d) => d.synonyms || [],
+                              ),
+                            ]),
                           )
                             .slice(0, 10)
                             .map((syn) => (
@@ -494,7 +525,7 @@ export const DictionaryView: React.FC = () => {
       )}
 
       {/* 3. TAB 2: WordBook View */}
-      {activeTab === 'wordbook' && (
+      {activeTab === "wordbook" && (
         <div className="space-y-6">
           {/* Stats Bar */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -504,7 +535,9 @@ export const DictionaryView: React.FC = () => {
                   <BookOpen className="w-5 h-5" />
                 </div>
                 <div>
-                  <div className="text-xs text-slate-400 font-medium">总收录生词</div>
+                  <div className="text-xs text-slate-400 font-medium">
+                    总收录生词
+                  </div>
                   <div className="text-xl font-black text-sb-house dark:text-white font-mono">
                     {wordBookList.length} 词
                   </div>
@@ -518,7 +551,9 @@ export const DictionaryView: React.FC = () => {
                   <Flame className="w-5 h-5" />
                 </div>
                 <div>
-                  <div className="text-xs text-slate-400 font-medium">待强化复习</div>
+                  <div className="text-xs text-slate-400 font-medium">
+                    待强化复习
+                  </div>
                   <div className="text-xl font-black text-amber-600 font-mono">
                     {unmasteredCount} 词
                   </div>
@@ -532,7 +567,9 @@ export const DictionaryView: React.FC = () => {
                   <CheckCircle2 className="w-5 h-5" />
                 </div>
                 <div>
-                  <div className="text-xs text-slate-400 font-medium">已牢记掌握</div>
+                  <div className="text-xs text-slate-400 font-medium">
+                    已牢记掌握
+                  </div>
                   <div className="text-xl font-black text-emerald-600 font-mono">
                     {masteredCount} 词
                   </div>
@@ -545,31 +582,31 @@ export const DictionaryView: React.FC = () => {
           <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-black/[0.06] dark:border-white/[0.08] flex flex-col sm:flex-row gap-3 items-center justify-between shadow-sm">
             <div className="flex items-center space-x-1 bg-sb-ceramic dark:bg-white/10 p-1 rounded-xl text-xs font-bold w-full sm:w-auto">
               <button
-                onClick={() => setWordBookFilter('all')}
+                onClick={() => setWordBookFilter("all")}
                 className={`flex-1 sm:flex-none px-4 py-1.5 rounded-lg transition ${
-                  wordBookFilter === 'all'
-                    ? 'bg-white dark:bg-slate-800 text-sb-green shadow-sm'
-                    : 'text-slate-500 hover:text-sb-green'
+                  wordBookFilter === "all"
+                    ? "bg-white dark:bg-slate-800 text-sb-green shadow-sm"
+                    : "text-slate-500 hover:text-sb-green"
                 }`}
               >
                 全部 ({wordBookList.length})
               </button>
               <button
-                onClick={() => setWordBookFilter('unmastered')}
+                onClick={() => setWordBookFilter("unmastered")}
                 className={`flex-1 sm:flex-none px-4 py-1.5 rounded-lg transition ${
-                  wordBookFilter === 'unmastered'
-                    ? 'bg-white dark:bg-slate-800 text-sb-green shadow-sm'
-                    : 'text-slate-500 hover:text-sb-green'
+                  wordBookFilter === "unmastered"
+                    ? "bg-white dark:bg-slate-800 text-sb-green shadow-sm"
+                    : "text-slate-500 hover:text-sb-green"
                 }`}
               >
                 待复习 ({unmasteredCount})
               </button>
               <button
-                onClick={() => setWordBookFilter('mastered')}
+                onClick={() => setWordBookFilter("mastered")}
                 className={`flex-1 sm:flex-none px-4 py-1.5 rounded-lg transition ${
-                  wordBookFilter === 'mastered'
-                    ? 'bg-white dark:bg-slate-800 text-sb-green shadow-sm'
-                    : 'text-slate-500 hover:text-sb-green'
+                  wordBookFilter === "mastered"
+                    ? "bg-white dark:bg-slate-800 text-sb-green shadow-sm"
+                    : "text-slate-500 hover:text-sb-green"
                 }`}
               >
                 已掌握 ({masteredCount})
@@ -592,7 +629,9 @@ export const DictionaryView: React.FC = () => {
           {filteredWordBook.length === 0 ? (
             <div className="py-20 text-center space-y-3 bg-white dark:bg-slate-900 rounded-2xl border border-dashed border-black/10 dark:border-white/10 p-8 text-slate-400">
               <FolderHeart className="w-12 h-12 mx-auto text-slate-300 dark:text-slate-600" />
-              <p className="text-sm font-semibold">生词本中暂无符合条件的单词</p>
+              <p className="text-sm font-semibold">
+                生词本中暂无符合条件的单词
+              </p>
               <p className="text-xs text-slate-400">
                 切换至「英英查词」页，查词后点击右上角「加入生词本」即可收录。
               </p>
@@ -613,7 +652,7 @@ export const DictionaryView: React.FC = () => {
                           handleToggleMastered(item);
                         }}
                         className="text-slate-400 hover:text-sb-green transition shrink-0"
-                        title={item.mastered ? '标记为待复习' : '标记为已掌握'}
+                        title={item.mastered ? "标记为待复习" : "标记为已掌握"}
                       >
                         {item.mastered ? (
                           <CheckCircle2 className="w-5 h-5 text-sb-green fill-sb-green/20" />
@@ -627,8 +666,8 @@ export const DictionaryView: React.FC = () => {
                           <span
                             className={`font-black text-base ${
                               item.mastered
-                                ? 'line-through text-slate-400 dark:text-slate-500'
-                                : 'text-sb-house dark:text-white'
+                                ? "line-through text-slate-400 dark:text-slate-500"
+                                : "text-sb-house dark:text-white"
                             }`}
                           >
                             {item.word}

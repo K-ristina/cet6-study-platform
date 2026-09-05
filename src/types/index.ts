@@ -148,12 +148,14 @@ export interface WordPhonetic {
 export interface WordDefinition {
   definition: string;
   example?: string;
+  exampleTranslation?: string;
   synonyms?: string[];
   antonyms?: string[];
 }
 
 export interface WordMeaning {
   partOfSpeech: string;
+  partOfSpeechTips?: string;
   definitions: WordDefinition[];
   synonyms?: string[];
   antonyms?: string[];
@@ -165,6 +167,8 @@ export interface DictionaryEntry {
   phonetics: WordPhonetic[];
   meanings: WordMeaning[];
   sourceUrls?: string[];
+  sourceName?: string;
+  stars?: number;
 }
 
 export interface WordBookItem {
