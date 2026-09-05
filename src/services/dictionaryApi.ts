@@ -172,6 +172,30 @@ export async function lookupEnglishWord(rawWord: string): Promise<DictionaryEntr
         memoryCache.set(word, collinsEntry);
         return collinsEntry;
       }
+
+      // If word had a typo (e.g. "therpy" -> "therapy"), auto-fetch candidate Collins entry
+      if (data.typos?.typo && data.typos.typo.length > 0) {
+        const candidateWord = data.typos.typo[0]?.word;
+        if (candidateWord && candidateWord.toLowerCase() !== word) {
+          try {
+            let candidateRes = await fetchWithTimeout(`/api/dict?q=${encodeURIComponent(candidateWord)}`, 3000);
+            if (!candidateRes.ok) {
+              candidateRes = await fetchWithTimeout(`/api/dict/jsonapi?q=${encodeURIComponent(candidateWord)}`, 2500);
+            }
+            if (candidateRes.ok) {
+              const candidateData = await candidateRes.json();
+              const candidateCollins = parseCollinsFromYoudao(candidateData, candidateWord);
+              if (candidateCollins) {
+                candidateCollins.correctedFrom = word;
+                memoryCache.set(word, candidateCollins);
+                return candidateCollins;
+              }
+            }
+          } catch {
+            // ignore
+          }
+        }
+      }
     }
   } catch (err) {
     console.warn(`Collins lookup via serverless/proxy skipped for "${word}":`, err);

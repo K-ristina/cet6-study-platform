@@ -385,6 +385,11 @@ export const DictionaryView: React.FC = () => {
                         {"★".repeat(Math.min(entry.stars, 5))}
                       </span>
                     )}
+                    {entry.correctedFrom && (
+                      <span className="text-xs bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 font-bold px-2.5 py-1 rounded-full border border-amber-200 dark:border-amber-800">
+                        智能纠错: {entry.correctedFrom} → {entry.word}
+                      </span>
+                    )}
                   </div>
 
                   <div className="mt-3 flex items-center space-x-2">

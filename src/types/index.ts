@@ -169,6 +169,7 @@ export interface DictionaryEntry {
   sourceUrls?: string[];
   sourceName?: string;
   stars?: number;
+  correctedFrom?: string;
 }
 
 export interface WordBookItem {
